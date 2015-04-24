@@ -42,7 +42,7 @@ class Tech:
     def IspRange(self): return self.maxIsp - self.minIsp
 
     # Given a TMR, calculate the vacuum ISP
-    def TmrToVacIsp(self, tmr):
+    def VacIspFromTmr(self, tmr):
             
         # Find the linear distance between optimal and min or max represented 
         # as a percent in the range 0 to 1
@@ -61,15 +61,15 @@ class Tech:
         return self.maxIsp - ispPenalty
 
     # Given a TMR, calculate the atmospheric ISP
-    def TmrToAtmIsp(self):
+    def AtmIspFromTmr(self):
         return self.VacIspToAtmIsp(TmrToVacIsp(derived))
 
     # Convert a vacuum ISP to an atmosphere one
-    def VacIspToAtmIsp (self, vacIsp):
+    def AtmIspFromVacIsp (self, vacIsp):
         return vacIsp * self.atmosphereMultiplier
 
     # Convert a atmospheric ISP to a vacuum one
-    def AtmIspToVacIsp (self, atmIsp):
+    def VacIspFromAtmIsp (self, atmIsp):
         return atmIsp / self.atmosphereMultiplier
 
     # Get the TMR using a TmrMultiplier
@@ -106,7 +106,7 @@ class Config:
 
     # Calculate the tmrMultiplier for a given size
     def TmrMultiplierFromSize(self, size):
-        tmrMultiplier = self.baseTmrMutliplier*((size/self.baseSize)**self.sizeTmrExponent)
+        tmrMultiplier = self.baseTmrMultiplier*((size/self.baseSize)**self.sizeTmrExponent)
         # Clamp the value to valid range
         return max(min(tmrMultiplier, 2.0), 0.0)
 

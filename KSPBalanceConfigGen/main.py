@@ -76,5 +76,24 @@ print ("Loaded "+str(len(configTypes))+" engine config type(s)")
 print("")
 
 
+for cfgKey in configTypes:
+    for s in [0.625, 1.25, 2.5, 3.75]:
+        cfg = configTypes[cfgKey]
+        tech = techTypes[cfg.tech]
+        tmr = tech.TmrFromTmrMultiplier(cfg.TmrMultiplierFromSize(s))
+        mass = cfg.MassFromSize(s)
+        vacIsp = tech.VacIspFromTmr(tmr)
+        atmIsp = tech.AtmIspFromVacIsp(vacIsp)
+        eng = engine.Engine(cfgKey+"-"+str(s),tmr,mass,vacIsp, atmIsp)
 
+        print (eng.name+
+            ", "+str(eng.mass)+
+            ", "+str(eng.thrust)+
+            ", "+str(eng.vacIsp)+
+            ", "+str(eng.atmIsp))
+
+        
+                
+                
+                                
 
