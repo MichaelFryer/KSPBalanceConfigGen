@@ -29,7 +29,7 @@ def EngineConfigFromParserSection(section):
     return engine.Config(section['tech'],
                 section['baseMass'],
                 section['baseSize'],
-                section['baseTmrMutliplier'],
+                section['baseTmrMultiplier'],
                 section['sizeMassExponent'],
                 section['sizeTmrExponent'])
 
@@ -74,8 +74,6 @@ for section in parser.sections():
 print ("------------------------------")
 print ("Loaded "+str(len(configTypes))+" engine config type(s)")
 print("")
-
-
 
 
 

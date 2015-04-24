@@ -72,24 +72,31 @@ class Tech:
     def AtmIspToVacIsp (self, atmIsp):
         return atmIsp / self.atmosphereMultiplier
 
+    # Get the TMR using a TmrMultiplier
+    def TmrFromTmrMultiplier(self, tmrMultiplier):
+        # Clamp the value to valid range
+        max(min(tmrMultiplier, 2.0), 0.0)
+        if (tmrMultiplier > 1):
+            return ((tmrMultiplier-1)*self.MaxTmrRange())+self.optimalTmr
+        else:
+            return ((tmrMultiplier-1)*self.MinTmrRange())+self.optimalTmr
+        
+
 # An engine config type which defines a relationship between size (diameter in meters)
-# and mass/TMR .
-# The TMR (thrust to mass ratio) is given as a value between 0 and 2 where 1.0 is the base
-# TMR of the related tech type, 0 is the minimum and 2 is the maximum, values outside this
-# are truncated.
+# and mass/tmrMultiplier .
 class Config:
     def __init__(self,
                  tech,
                  baseMass,
                  baseSize,
-                 baseTmrMutliplier,
+                 baseTmrMultiplier,
                  sizeMassExponent,
                  sizeTmrExponent
                  ):
         self.tech = str(tech)
         self.baseMass = float(baseMass)
         self.baseSize = float(baseSize)
-        self.baseTmrMutliplier = float(baseTmrMutliplier)
+        self.baseTmrMultiplier = float(baseTmrMultiplier)
         self.sizeMassExponent = float(sizeMassExponent)
         self.sizeTmrExponent = float(sizeTmrExponent)
 
@@ -103,16 +110,16 @@ class Config:
         # Clamp the value to valid range
         return max(min(tmrMultiplier, 2.0), 0.0)
 
-    # Calculate the actual TMR for a given size and tech
-    def TmrFromSize(self, size, tech):
-        assert type(tech) is Tech, "tech is not a "+__name__+".tech"
-        tmrMultiplier = self.TmrMultiplierFromSize(size)
-        if (tmrMultiplier > 1):
-            return ((tmrMultiplier-1)*tech.MaxTmrRange())+tech.optimalTmr
-        else:
-            return ((tmrMultiplier-1)*tech.MinTmrRange())+tech.optimalTmr
-    
-    
-        
-
-    
+class Engine
+    def __init__(self,
+                 name,
+                 tmr,
+                 mass,
+                 vacIsp,
+                 atmIsp,
+                 ):
+        self.name = str(name)
+        self.mass = (float)mass
+        self.thrust = mass * (float)tmr
+        self.vacIsp = (float)vacIsp
+        self.atmIsp = (float)atmIsp
