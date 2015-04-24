@@ -110,7 +110,7 @@ class Config:
         # Clamp the value to valid range
         return max(min(tmrMultiplier, 2.0), 0.0)
 
-class Engine
+class Engine:
     def __init__(self,
                  name,
                  tmr,
@@ -119,7 +119,7 @@ class Engine
                  atmIsp,
                  ):
         self.name = str(name)
-        self.mass = (float)mass
-        self.thrust = mass * (float)tmr
-        self.vacIsp = (float)vacIsp
-        self.atmIsp = (float)atmIsp
+        self.mass = float(mass)
+        self.thrust = mass * float(tmr)
+        self.vacIsp = float(vacIsp)
+        self.atmIsp = float(atmIsp)
