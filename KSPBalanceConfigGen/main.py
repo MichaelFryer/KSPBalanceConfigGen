@@ -44,7 +44,6 @@ for section in parser.sections():
     try:
         print("Loading: "+section)
         techTypes[section] = EngineTechFromParserSection(parser[section])
-        techTypes[section].derived = engine.Tech.TechDerived(techTypes[section])
     except ValueError:
         print (" -- Failed to load engine tech type '"+section+"', "+str(e)+"'")
     except KeyError as e:

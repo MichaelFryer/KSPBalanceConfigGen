@@ -41,41 +41,27 @@ class Tech:
         return self.optimalTmr - (self.MinTmr() if minTmr == None else minTmr)
     def IspRange(self): return self.maxIsp - self.minIsp
 
-    # Helper class to cache derived values
-    class TechDerived:
-        def __init__(self, tech):
-            self.maxTmr = tech.MaxTmr()
-            self.minTmr = tech.MinTmr()
-            self.maxTmrRange = tech.MaxTmrRange(self.maxTmr)
-            self.minTmrRange = tech.MinTmrRange(self.minTmr)
-            self.ispRange = tech.IspRange()
-
     # Given a TMR, calculate the vacuum ISP
-    def TmrToVacIsp(self, tmr, derived = None):
-
-        # Calculate the derived values if none were passed in
-        if (derived is None):
-            derived = self.TechDerived(self)
-        assert type(derived) is TechDerived, "derived is not an "+__name__+".Tech.TechDerived"
+    def TmrToVacIsp(self, tmr):
             
         # Find the linear distance between optimal and min or max represented 
         # as a percent in the range 0 to 1
         if (tmr < self.optimalTmr):
-            ispPenalty = (self.optimalTmr-tmr)/derived.minTmrRange
+            ispPenalty = (self.optimalTmr-tmr)/self.MinTmrRange()
         else:
-            ispPenalty = (tmr-self.optimalTmr)/derived.maxTmrRange
+            ispPenalty = (tmr-self.optimalTmr)/self.MaxTmrRange()
 
         # Apply the exponential scaling
         ispPenalty **= self.exponent
 
         # Convert from a percent penalty to an actual penalty based on the ISP range
-        ispPenalty *= derived.ispRange
+        ispPenalty *= self.IspRange()
 
         # Finally calculate the actual ISP by subtracting the penalty from the maximum
         return self.maxIsp - ispPenalty
 
     # Given a TMR, calculate the atmospheric ISP
-    def TmrToAtmIsp(self, derived = None):
+    def TmrToAtmIsp(self):
         return self.VacIspToAtmIsp(TmrToVacIsp(derived))
 
     # Convert a vacuum ISP to an atmosphere one
