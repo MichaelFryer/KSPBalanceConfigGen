@@ -17,12 +17,21 @@
 import configparser
 import engine
 
-def TechFromConfigParserSection(section):
+def EngineTechFromParserSection(section):
     return engine.Tech(section['optimalTmr'],
                 section['tmrScaling'],
                 section['maxIsp'],
                 section['minIsp'],
-                section['exponent'])
+                section['exponent'],
+                section['atmosphereMultiplier'])
+
+def EngineConfigFromParserSection(section):
+    return engine.Config(section['tech'],
+                section['baseMass'],
+                section['baseSize'],
+                section['baseTmrMutliplier'],
+                section['sizeMassExponent'],
+                section['sizeTmrExponent'])
 
 # Parse engine tech types
 print ("------------------------------")
@@ -34,15 +43,16 @@ techTypes = {}
 for section in parser.sections():
     try:
         print("Loading: "+section)
-        techTypes[section] = TechFromConfigParserSection(parser[section])
+        techTypes[section] = EngineTechFromParserSection(parser[section])
         techTypes[section].derived = engine.Tech.TechDerived(techTypes[section])
     except ValueError:
-        print (" -- Failed to load engine tech type '"+section+"'. Invalid Value.")
+        print (" -- Failed to load engine tech type '"+section+"', "+str(e)+"'")
     except KeyError as e:
         print (" -- Failed to load engine tech type '"+section+"'. Missing Value '"+e.args[0]+"'")
 print ("------------------------------")
 print("Loaded "+str(len(techTypes))+" engine tech type(s)")
 print("")
+
 
 
 # Parse engine config types
@@ -56,15 +66,17 @@ configTypes = {}
 for section in parser.sections():
     try:
         print("Loading: "+section)
-    except ValueError:
-        print ("Failed to load engine config type '"+section+"'. Invalid Value.")
+        configTypes[section] = EngineConfigFromParserSection(parser[section])
+    except ValueError as e:
+        print ("Failed to load engine config type '"+section+"', "+str(e)+"'")
     except KeyError as e:
         print ("Failed to load engine config type '"+section+"'. Missing Value '"+e.args[0]+"'")
         
 print ("------------------------------")
 print ("Loaded "+str(len(configTypes))+" engine config type(s)")
 print("")
-    
+
+
 
 
 
