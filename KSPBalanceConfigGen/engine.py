@@ -104,11 +104,11 @@ class Config:
 
     # Calculate the mass for a given size
     def MassFromSize(self, size):
-        return self.baseMass*((size/self.baseSize)**self.sizeMassExponent)
+        return self.baseMass*((float(size)/self.baseSize)**self.sizeMassExponent)
 
     # Calculate the tmrMultiplier for a given size
     def TmrMultiplierFromSize(self, size):
-        tmrMultiplier = self.baseTmrMultiplier*((size/self.baseSize)**self.sizeTmrExponent)
+        tmrMultiplier = self.baseTmrMultiplier*((float(size)/self.baseSize)**self.sizeTmrExponent)
         # Clamp the value to valid range
         return max(min(tmrMultiplier, 2.0), 0.0)
 
@@ -123,7 +123,7 @@ class Config:
         vacIsp = self.tech.VacIspFromTmr(tmr)
         return Engine(
             mass,
-            mass/tmr,
+            tmr*mass,
             vacIsp,
             self.tech.AtmIspFromVacIsp(vacIsp))
 
