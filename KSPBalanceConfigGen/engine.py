@@ -14,6 +14,7 @@
 ##You should have received a copy of the GNU General Public License
 ##along with KSPBalanceConfigGen.  If not, see <http://www.gnu.org/licenses/>.
 
+import copy
 
 # An engine tech type which defines a relationship between thrust to mass ratio (TMR) and ISP
 class Tech:
@@ -93,7 +94,8 @@ class Config:
                  sizeMassExponent,
                  sizeTmrExponent
                  ):
-        self.tech = str(tech)
+        assert isinstance(tech, Tech), "tech must be of type "+__name__+".Tech"
+        self.tech = copy.copy(tech)
         self.baseMass = float(baseMass)
         self.baseSize = float(baseSize)
         self.baseTmrMultiplier = float(baseTmrMultiplier)
@@ -110,16 +112,29 @@ class Config:
         # Clamp the value to valid range
         return max(min(tmrMultiplier, 2.0), 0.0)
 
+    # Calculate the TMR for a given size
+    def TmrFromSize(self, size):
+        return self.tech.TmrFromTmrMultiplier(self.TmrMultiplierFromSize(size))
+
+    # Calculate Engine from size
+    def EngineFromSize(self, size):
+        tmr = self.TmrFromSize(size)
+        mass = self.MassFromSize(size)
+        vacIsp = self.tech.VacIspFromTmr(tmr)
+        return Engine(
+            mass,
+            mass/tmr,
+            vacIsp,
+            self.tech.AtmIspFromVacIsp(vacIsp))
+
 class Engine:
     def __init__(self,
-                 name,
-                 tmr,
                  mass,
+                 thrust,
                  vacIsp,
                  atmIsp,
                  ):
-        self.name = str(name)
         self.mass = float(mass)
-        self.thrust = mass * float(tmr)
+        self.thrust = float(thrust)
         self.vacIsp = float(vacIsp)
         self.atmIsp = float(atmIsp)
