@@ -39,19 +39,20 @@ def EngineConfigFromParserSection(section):
 def round_to_significant(x, y):
     return round(x, (y-1)-int(math.floor(math.log10(x))))
 
-techFile = 'example_techs.ini'
-configFile = 'example_configs.ini'
-partFile = 'example_parts.csv'
-exportFile = 'd:\example_export.csv'
-useCSVExport = True;
+techFilePath = 'example_techs.ini'
+configFilePath = 'example_configs.ini'
+partFilePath = 'example_parts.csv'
+templateFilePath = 'example_template.cfg'
+exportFilePath = 'd:\export.cfg'
+useCSVExport = False;
 
 # Parse engine tech types
 print ("------------------------------")
 print ("Loading Engine Tech Types")
 print ("------------------------------")
 parser = configparser.ConfigParser()
-print('Reading: '+techFile)
-parser.read(techFile)
+print('Reading: '+techFilePath)
+parser.read(techFilePath)
 techTypes = {}
 for section in parser.sections():
     try:
@@ -73,8 +74,8 @@ print ("Loading Engine Config Types")
 print ("------------------------------")
 
 parser = configparser.ConfigParser()
-print('Reading: '+configFile)
-parser.read(configFile)
+print('Reading: '+configFilePath)
+parser.read(configFilePath)
 configTypes = {}
 for section in parser.sections():
     try:
@@ -95,14 +96,15 @@ print ("Loading/Balancing Parts")
 print ("------------------------------")
 
 engines = {}
-print('Opening: '+partFile)
-with open(partFile, 'rt', encoding="utf-8") as partsImportFile:
-    print('Reading: '+partFile)
+print('Opening: '+partFilePath)
+with open(partFilePath, 'rt', encoding="utf-8") as partsImportFile:
+    print('Reading: '+partFilePath)
     csvReader = csv.reader(partsImportFile, delimiter=',', quotechar='"')
     for row in csvReader:
         try:
             print("Parsing/Balancing: "+str(row[0]))
             engines[str(row[0])] = configTypes[row[2]].EngineFromSize(row[1])
+            engines[str(row[0])].module = str(row[3])
         except ValueError as e:
             print (" -- Failed to load part, "+str(e))
         except IndexError as e:
@@ -123,8 +125,8 @@ numPartsWritten = 0
 # CSV Export
 if useCSVExport:
     print('Exporting to CSV')
-    print('Opening: '+exportFile)
-    with open(exportFile, 'w', newline='') as partExportFile:
+    print('Opening: '+exportFilePath)
+    with open(exportFilePath, 'w', newline='') as partExportFile:
         print('Writing headers')
         csvWriter = csv.writer(partExportFile, delimiter=',',
             quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -132,19 +134,37 @@ if useCSVExport:
         for name, eng in engines.items():
             print('Writing part: '+name)
             csvWriter.writerow([name,
-                round_to_significant(eng.mass, 2),
-                round_to_significant(eng.thrust, 2),
-                round_to_significant(eng.vacIsp, 2),
-                round_to_significant(eng.atmIsp, 2)])
+                round_to_significant(eng.mass, 3),
+                round_to_significant(eng.thrust, 3),
+                round_to_significant(eng.vacIsp, 3),
+                round_to_significant(eng.atmIsp, 3)])
             numPartsWritten += 1
 
 # Module Manager Config Export
 else:
-    pass
+    print('Exporting to Module Manager cfg')
+    print('Reading Template File: '+templateFilePath)
+    with open(templateFilePath, 'r') as templateFile:
+        template = templateFile.read()
+    print('Opening: '+exportFilePath)
+    with open(exportFilePath, 'w', newline='') as partExportFile:
+        print('Erasing file')
+        partExportFile.truncate()
+        for name, eng in engines.items():
+            print('Writing part: '+name)
+            mmcfg = template
+            mmcfg = mmcfg.replace('%NAME%', name)
+            mmcfg = mmcfg.replace('%MASS%', str(round_to_significant(eng.mass,3)))
+            mmcfg = mmcfg.replace('%MODULE%', eng.module)
+            mmcfg = mmcfg.replace('%THRUST%', str(round_to_significant(eng.thrust,3)))
+            mmcfg = mmcfg.replace('%VACISP%', str(round_to_significant(eng.vacIsp,3)))
+            mmcfg = mmcfg.replace('%ATMISP%', str(round_to_significant(eng.atmIsp,3)))
+            partExportFile.write(mmcfg)
+            numPartsWritten += 1
             
  
 print ("------------------------------")
-print ("Wrote "+str(len(engines))+" part(s) to "+exportFile)
+print ("Wrote "+str(numPartsWritten)+" part(s) to "+exportFilePath)
 print("")
 
         
