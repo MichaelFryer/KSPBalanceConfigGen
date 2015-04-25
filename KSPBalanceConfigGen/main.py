@@ -18,6 +18,7 @@ import configparser
 import engine
 import csv
 import math
+import sys
 
 def EngineTechFromParserSection(section):
     return engine.Tech(section['optimalTmr'],
@@ -39,12 +40,21 @@ def EngineConfigFromParserSection(section):
 def round_to_significant(x, y):
     return round(x, (y-1)-int(math.floor(math.log10(x))))
 
-techFilePath = 'example_techs.ini'
-configFilePath = 'example_configs.ini'
-partFilePath = 'example_parts.csv'
-templateFilePath = 'example_template.cfg'
-exportFilePath = 'd:\export.cfg'
-useCSVExport = False;
+# Parse command line
+if len(sys.argv) < 5:
+    print ('Too few arguments')
+    print ('Usage: main.py techFile configFile partFile exportFile [templateFile]')
+    sys.exit(0)
+
+techFilePath = sys.argv[1]
+configFilePath =  sys.argv[2]
+partFilePath =  sys.argv[3]
+exportFilePath =  sys.argv[4]
+
+useCSVExport = True;
+if len(sys.argv) > 5:
+    templateFilePath =  sys.argv[5]
+    useCSVExport = False;
 
 # Parse engine tech types
 print ("------------------------------")
@@ -95,7 +105,7 @@ print ("------------------------------")
 print ("Loading/Balancing Parts")
 print ("------------------------------")
 
-engines = {}
+engines = []
 print('Opening: '+partFilePath)
 with open(partFilePath, 'rt', encoding="utf-8") as partsImportFile:
     print('Reading: '+partFilePath)
@@ -103,8 +113,14 @@ with open(partFilePath, 'rt', encoding="utf-8") as partsImportFile:
     for row in csvReader:
         try:
             print("Parsing/Balancing: "+str(row[0]))
-            engines[str(row[0])] = configTypes[row[2]].EngineFromSize(row[1])
-            engines[str(row[0])].module = str(row[3])
+            eng = configTypes[row[2]].EngineFromSize(row[1])
+            eng.module = str(row[3])
+            eng.name = str(row[0])
+            if (len(row) > 4):
+                eng.index = int(row[4])
+            else:
+                eng.index = int(0)
+            engines.append(eng)
         except ValueError as e:
             print (" -- Failed to load part, "+str(e))
         except IndexError as e:
@@ -131,9 +147,9 @@ if useCSVExport:
         csvWriter = csv.writer(partExportFile, delimiter=',',
             quotechar='"', quoting=csv.QUOTE_MINIMAL)
         csvWriter.writerow(['Name', 'Mass', 'Thrust', 'Vacuum ISP', 'Atmosphere ISP'])
-        for name, eng in engines.items():
-            print('Writing part: '+name)
-            csvWriter.writerow([name,
+        for eng in engines:
+            print('Writing part: '+eng.name)
+            csvWriter.writerow([eng.name,
                 round_to_significant(eng.mass, 3),
                 round_to_significant(eng.thrust, 3),
                 round_to_significant(eng.vacIsp, 3),
@@ -150,12 +166,16 @@ else:
     with open(exportFilePath, 'w', newline='') as partExportFile:
         print('Erasing file')
         partExportFile.truncate()
-        for name, eng in engines.items():
-            print('Writing part: '+name)
+        for eng in engines:
+            print('Writing part: '+eng.name)
             mmcfg = template
-            mmcfg = mmcfg.replace('%NAME%', name)
+            mmcfg = mmcfg.replace('%NAME%', eng.name)
             mmcfg = mmcfg.replace('%MASS%', str(round_to_significant(eng.mass,3)))
             mmcfg = mmcfg.replace('%MODULE%', eng.module)
+            if (eng.index != 0):
+                mmcfg = mmcfg.replace('%INDEX%', ','+str(eng.index))
+            else:
+                mmcfg = mmcfg.replace('%INDEX%', '')
             mmcfg = mmcfg.replace('%THRUST%', str(round_to_significant(eng.thrust,3)))
             mmcfg = mmcfg.replace('%VACISP%', str(round_to_significant(eng.vacIsp,3)))
             mmcfg = mmcfg.replace('%ATMISP%', str(round_to_significant(eng.atmIsp,3)))

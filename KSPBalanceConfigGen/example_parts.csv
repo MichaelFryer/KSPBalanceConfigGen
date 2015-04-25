@@ -1,4 +1,5 @@
 Tiny_Efficient,0.625,LFOX_EFFICIENT,ModuleEnginesFX
-Small_Balance,1.25,LFOX_BALANCE,ModuleEnginesFX
+Small_Balance,1.25,LFOX_EFFICIENT,ModuleEnginesFX
+Small_Balance,1.25,LFOX_BALANCE,ModuleEnginesFX,1
 Large_Balance,2.5,LFOX_BALANCE,ModuleEngines
 Huge_Balance,3.75,LFOX_BALANCE,ModuleEnginesFX
